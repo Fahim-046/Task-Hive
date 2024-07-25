@@ -1,5 +1,6 @@
 package com.example.taskhive.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
@@ -27,7 +27,8 @@ import androidx.compose.ui.unit.dp
 import com.example.taskhive.ui.theme.appColor
 
 @Composable
-fun Task(
+fun TaskCard(
+    onClick:()->Unit = {},
     projectName: String,
     taskName: String,
     endTime: String,
@@ -36,12 +37,16 @@ fun Task(
     iconColor: Int = 0,
     backgroundColor: Int = 0,
 ) {
+    println("From task card $status")
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
         Modifier
             .fillMaxWidth()
-            .height(160.dp),
+            .height(160.dp)
+            .clickable {
+                onClick()
+            },
         elevation = CardDefaults.elevatedCardElevation(2.dp),
         colors =
         CardDefaults.elevatedCardColors(
@@ -115,7 +120,7 @@ fun Task(
 @Preview()
 @Composable
 private fun TaskPreview() {
-    Task(
+    TaskCard(
         projectName = "Task Management and To do app design",
         taskName = "Market Research",
         endTime = "10:00 AM",

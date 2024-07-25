@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.local.AppDatabase
+import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.utils.getReadableTime
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,9 @@ import kotlinx.coroutines.launch
 class TaskAddViewModel : ViewModel() {
     private val _showMessage = MutableStateFlow<String?>(null)
     val showMessage = _showMessage.asStateFlow()
+
+    private val _project = MutableStateFlow<Project?>(null)
+    val project = _project.asStateFlow()
 
     private fun isValid(
         name: String,
@@ -42,5 +46,12 @@ class TaskAddViewModel : ViewModel() {
         }
         AppDatabase(context).taskDao().saveTask(task)
         _showMessage.value = "Task saved"
+    }
+
+    fun getProjectById(projectId:Int, context: Context) = viewModelScope.launch {
+        val project = AppDatabase(context = context).projectDao().getProjectById(projectId)
+        if(project.name.isNotBlank()){
+            _project.value = project
+        }
     }
 }

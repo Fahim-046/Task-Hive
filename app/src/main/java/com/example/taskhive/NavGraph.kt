@@ -13,6 +13,7 @@ import com.example.taskhive.presentation.onboard.OnBoardScreen
 import com.example.taskhive.presentation.profile.ProfileScreen
 import com.example.taskhive.presentation.project.add.ProjectAddScreen
 import com.example.taskhive.presentation.task.add.TaskAddScreen
+import com.example.taskhive.presentation.task.edit.TaskEditScreen
 import com.example.taskhive.presentation.task.list.TaskListScreen
 
 sealed class Screen(
@@ -28,6 +29,10 @@ sealed class Screen(
 
     data object TaskAdd : Screen("task/add/{projectId}") {
         fun createRoute(projectId: Int) = route.replaceFirst("{projectId}", "$projectId")
+    }
+
+    data object TaskEdit : Screen("task/edit/{taskId}") {
+        fun createRoute(taskId: Int) = route.replaceFirst("{taskId}", "$taskId")
     }
 
     data object ProjectAdd : Screen("project/add")
@@ -78,6 +83,11 @@ fun MainNavHost(navController: NavHostController) {
                         ),
                     )
                 },
+                goToEditTask = {taskId->
+                    navController.navigate(
+                        Screen.TaskEdit.createRoute(taskId = taskId)
+                    )
+                },
                 projectId = backStackEntry.arguments?.getInt("projectId"),
             )
         }
@@ -91,6 +101,14 @@ fun MainNavHost(navController: NavHostController) {
             TaskAddScreen(
                 goBack = { navController.popBackStack() },
                 projectId = navController.currentBackStackEntry?.arguments?.getInt("projectId")!!,
+            )
+        }
+        composable(route = Screen.TaskEdit.route,
+            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+        ) {
+            TaskEditScreen(
+                goBack = { navController.popBackStack() },
+                taskId = navController.currentBackStackEntry?.arguments?.getInt("taskId")!!
             )
         }
         composable(Screen.Notes.route) {

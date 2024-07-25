@@ -51,6 +51,7 @@ import com.example.taskhive.components.InProgressCard
 import com.example.taskhive.components.ProgressCard
 import com.example.taskhive.components.TaskGroup
 import com.example.taskhive.domain.model.Project
+import com.example.taskhive.presentation.uimodel.ProjectUiModel
 import com.example.taskhive.ui.theme.appColor
 import java.util.Date
 
@@ -83,7 +84,7 @@ fun HomeScreen(
 @Composable
 fun HomeScreenSkeleton(
     goToAddProject: () -> Unit = {},
-    projects: List<Project> = emptyList(),
+    projects: List<ProjectUiModel> = emptyList(),
     numberOfProject: Int = 0,
     goToTaskList: (Int?) -> Unit = {},
 ) {
@@ -249,7 +250,7 @@ fun HomeScreenSkeleton(
                             goToTaskList(project.id)
                         },
                         project = project.name,
-                        numberOfTask = 0,
+                        numberOfTask = project.numberOfTask,
                         progress = 0.0f,
                         selectedIcon = project.selectedIcon,
                         selectedIconColor = project.selectedIconColor,

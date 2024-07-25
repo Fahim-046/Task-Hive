@@ -1,4 +1,4 @@
-package com.example.taskhive.presentation.task.add
+package com.example.taskhive.presentation.task.edit
 
 import android.icu.util.Calendar
 import androidx.compose.foundation.layout.Arrangement
@@ -37,74 +37,77 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CommonCard
 import com.example.taskhive.components.CustomButton
+import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TimePickerDialog
 import com.example.taskhive.components.TopBar
+import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.presentation.uimodel.TaskUiModel
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
 import com.example.taskhive.utils.getReadableTime
 import com.example.taskhive.utils.toDate
 import java.util.Date
 
 @Composable
-fun TaskAddScreen(
+fun TaskEditScreen(
     goBack: () -> Unit,
-    projectId: Int,
+    taskId: Int,
 ) {
-    val viewModel: TaskAddViewModel = viewModel()
-    val showMessage by viewModel.showMessage.collectAsState()
-    LaunchedEffect(showMessage) {
-        if (showMessage != null) {
-            if (showMessage == "Task saved") {
-                goBack()
-            }
-        }
-    }
-
+    val viewModel: TaskEditViewModel = viewModel()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        viewModel.getProjectById(projectId, context)
+        viewModel.getTaskById(context, taskId)
     }
-
-    val project by viewModel.project.collectAsState()
-
-    TaskAddScreenSkeleton(
+    val task by viewModel.task.collectAsState()
+    TaskEditScreenSkeleton(
         goBack = goBack,
-        saveTask = { title, description, startTime, endTime ->
-            project?.let {
-                Task(
-                    id = 0,
-                    title = title,
-                    description = description,
-                    plannedStartTime = startTime,
-                    plannedEndTime = endTime,
-                    project = it,
-                )
-            }?.let {
-                viewModel.saveTask(
-                    it,
-                    context = context,
+        task = task,
+        editTask = { title, description, startTime, endTime, status ->
+            task?.copy(
+                title = title,
+                description = description,
+                plannedStartTime = startTime,
+                plannedEndTime = endTime,
+                taskStatus = status
+            )?.let {
+                viewModel.editTask(
+                    context,
+                    it
                 )
             }
         },
+        onTitleChange = { newTitle ->
+            viewModel.onTitleChange(newTitle)
+        },
+        onDescriptionChange = { newDescription ->
+            viewModel.onDescriptionChange(newDescription)
+        },
+        onTaskStatusChange = {newStatus->
+            viewModel.onTaskStatusChange(newStatus)
+        }
     )
 }
 
 @Preview
 @Composable
-private fun TaskAddScreenSkeletonPreview() {
-    TaskAddScreenSkeleton()
+private fun TaskEditScreenSkeletonPreview() {
+    TaskEditScreenSkeleton()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskAddScreenSkeleton(
+fun TaskEditScreenSkeleton(
     goBack: () -> Unit = {},
-    saveTask: (String, String, Date?, Date?) -> Unit = { _, _, _, _ -> },
+    task: TaskUiModel? = null,
+    editTask: (String, String, Date?, Date?, TaskStatus) -> Unit = { _, _, _, _, _ -> },
+    onTitleChange: (String) -> Unit = {},
+    onDescriptionChange: (String) -> Unit = {},
+    onTaskStatusChange:(TaskStatus)->Unit = {}
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var startTime by remember { mutableStateOf<Date?>(null) }
-    var endTime by remember { mutableStateOf<Date?>(null) }
+    var status by remember {
+        mutableStateOf(TaskStatus.TODO)
+    }
     var showStartTimePickerDialog by remember { mutableStateOf(false) }
     var showEndTimePickerDialog by remember { mutableStateOf(false) }
     Scaffold(
@@ -112,7 +115,7 @@ fun TaskAddScreenSkeleton(
             TopBar(
                 onClick = { goBack() },
                 leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                title = "Add Task",
+                title = "Edit Task",
                 trailingIcon = Icons.Filled.Notifications,
             )
         },
@@ -122,14 +125,18 @@ fun TaskAddScreenSkeleton(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 onClick =
                 {
-                    saveTask(
-                        title,
-                        description,
-                        startTime,
-                        endTime,
-                    )
+                    task?.let {
+                        editTask(
+                            task.title,
+                            task.description,
+                            task.plannedStartTime,
+                            task.plannedEndTime,
+                            task.taskStatus
+                        )
+                    }
+                    goBack()
                 },
-                text = "Add Task",
+                text = "Edit Task",
                 trailingIcon = null,
             )
         },
@@ -140,48 +147,85 @@ fun TaskAddScreenSkeleton(
                 .padding(16.dp)
                 .fillMaxSize(),
         ) {
-            CommonCard(
-                modifier = Modifier.fillMaxWidth(),
-                value = title,
-                onValueChange = { title = it },
-                label = "Task Title",
-                lines = 1,
-            )
+            if (task != null) {
+                CommonCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = task.title,
+                    onValueChange = { onTitleChange(it) },
+                    label = "Task Title",
+                    lines = 1,
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
-            CommonCard(
-                modifier = Modifier.fillMaxWidth(),
-                value = description,
-                onValueChange = { description = it },
-                label = "Description",
-                lines = 5,
-            )
+            if (task != null) {
+                CommonCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = task.description,
+                    onValueChange = { onDescriptionChange(it) },
+                    label = "Description",
+                    lines = 5,
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                CommonCard(
-                    modifier = Modifier.weight(1f),
-                    value = startTime.getReadableTime(),
-                    onValueChange = { },
-                    label = "Start Time",
-                    lines = 1,
-                    readOnly = true,
-                )
+                if (task != null) {
+                    CommonCard(
+                        modifier = Modifier.weight(1f),
+                        value = task.plannedStartTime.getReadableTime(),
+                        onValueChange = { },
+                        label = "Start Time",
+                        lines = 1,
+                        readOnly = true,
+                    )
+                }
                 FloatingActionButton(onClick = { showStartTimePickerDialog = true }) {
                     Icon(Icons.Filled.Add, contentDescription = "Add time")
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                CommonCard(
-                    modifier = Modifier.weight(1f),
-                    value = endTime.getReadableTime(),
-                    onValueChange = { },
-                    label = "End Time",
-                    lines = 1,
-                    readOnly = true,
-                )
+                if (task != null) {
+                    CommonCard(
+                        modifier = Modifier.weight(1f),
+                        value = task.plannedEndTime.getReadableTime(),
+                        onValueChange = { },
+                        label = "End Time",
+                        lines = 1,
+                        readOnly = true,
+                    )
+                }
                 FloatingActionButton(onClick = { showEndTimePickerDialog = true }) {
                     Icon(Icons.Filled.Add, contentDescription = "Add time")
                 }
+            }
+            LaunchedEffect(Unit) {
+                if (task != null) {
+                    status = task.taskStatus
+                }
+            }
+            Row(
+                modifier = Modifier.padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (task != null) {
+                    ProgressType(
+                        onClick = { onTaskStatusChange(TaskStatus.TODO) },
+                        text = "To-do",
+                        isSelected = task.taskStatus == TaskStatus.TODO
+                    )
+                    ProgressType(
+                        onClick = { onTaskStatusChange(TaskStatus.IN_PROGRESS) },
+                        text = "In Progress",
+                        isSelected = task.taskStatus == TaskStatus.IN_PROGRESS
+                    )
+                    ProgressType(
+                        onClick = { onTaskStatusChange(TaskStatus.DONE) },
+                        text = "Done",
+                        isSelected = task.taskStatus == TaskStatus.DONE
+                    )
+                    println(status)
+                }
+
             }
         }
     }
@@ -208,7 +252,9 @@ fun TaskAddScreenSkeleton(
                     val minute = timePickerState.minute
                     val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
                     val currentMinute = calendar.get(Calendar.MINUTE)
-                    startTime = convert24HourTo12Hour("$hour:$minute").toDate()
+                    if (task != null) {
+                        task.plannedStartTime = convert24HourTo12Hour("$hour:$minute").toDate()
+                    }
                     showStartTimePickerDialog = false
                 }) {
                     Text(text = "Ok")
@@ -244,7 +290,9 @@ fun TaskAddScreenSkeleton(
                     val minute = timePickerState.minute
                     val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
                     val currentMinute = calendar.get(Calendar.MINUTE)
-                    endTime = convert24HourTo12Hour("$hour:$minute").toDate()
+                    if (task != null) {
+                        task.plannedEndTime = convert24HourTo12Hour("$hour:$minute").toDate()
+                    }
                     showEndTimePickerDialog = false
                 }) {
                     Text(text = "Ok")

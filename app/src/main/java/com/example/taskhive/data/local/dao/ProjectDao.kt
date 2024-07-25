@@ -12,11 +12,11 @@ interface ProjectDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveProject(project: Project): Long
 
-    @Query("SELECT * FROM projects WHERE endDate >= :currentDate")
-    suspend fun getAllProjects(currentDate:Date): List<Project>
+    @Query("SELECT * FROM projects")
+    suspend fun getAllProjects(): List<Project>
 
-    @Query("SELECT COUNT(*) FROM tasks WHERE projectId = :projectId")
-    suspend fun getTaskCount(projectId: Int): Int
+    @Query("SELECT COUNT(*) FROM tasks WHERE project = :project")
+    suspend fun getTaskCount(project: Project): Int
 
     @Query("SELECT COUNT(*) FROM projects")
     suspend fun getProjectCount(): Int

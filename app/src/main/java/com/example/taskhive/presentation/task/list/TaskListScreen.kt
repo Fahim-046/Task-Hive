@@ -32,10 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CalendarCard
 import com.example.taskhive.components.ProgressType
-import com.example.taskhive.components.Task
+import com.example.taskhive.components.TaskCard
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.presentation.uimodel.TaskUiModel
 import com.example.taskhive.ui.theme.TaskHiveTheme
 import com.example.taskhive.ui.theme.appColor
 import com.example.taskhive.utils.getReadableTime
@@ -44,6 +46,7 @@ import com.example.taskhive.utils.getReadableTime
 fun TaskListScreen(
     goBack: () -> Unit,
     goToAddTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
     projectId: Int? = null,
 ) {
     val context = LocalContext.current
@@ -65,6 +68,7 @@ fun TaskListScreen(
     TaskListScreenSkeleton(
         goBack = goBack,
         goToAddTask = goToAddTask,
+        goToEditTask = goToEditTask,
         projectId = projectId,
         tasks = tasks,
         project = project,
@@ -83,8 +87,9 @@ private fun TaskListScreenSkeletonPreview() {
 fun TaskListScreenSkeleton(
     goBack: () -> Unit = {},
     goToAddTask: (Int) -> Unit = {},
+    goToEditTask: (Int) -> Unit = {},
     projectId: Int? = null,
-    tasks: List<Task> = emptyList(),
+    tasks: List<TaskUiModel> = emptyList(),
     project: Project? = null,
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -157,13 +162,24 @@ fun TaskListScreenSkeleton(
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 items(
-                    tasks,
+                    when (selectedIndex) {
+                        0 -> tasks
+                        1 -> tasks.filter { it.taskStatus == TaskStatus.TODO }
+                        2 -> tasks.filter { it.taskStatus == TaskStatus.IN_PROGRESS }
+                        3 -> tasks.filter { it.taskStatus == TaskStatus.DONE }
+                        else -> tasks
+                    },
                 ) { task ->
-                    Task(
+                    TaskCard(
+                        onClick = { goToEditTask(task.id) },
                         projectName = project?.name ?: "",
                         taskName = task.title,
                         endTime = task.plannedEndTime.getReadableTime(),
-                        status = task.taskStatus.name,
+                        status = when (task.taskStatus) {
+                            TaskStatus.TODO -> "To-do"
+                            TaskStatus.IN_PROGRESS -> "In Progress"
+                            TaskStatus.DONE -> "Done"
+                        },
                         icon = project?.selectedIcon ?: 0,
                         iconColor = project?.selectedIconColor ?: 0,
                         backgroundColor = project?.selectedBorderColor ?: 0,

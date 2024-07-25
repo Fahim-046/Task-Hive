@@ -14,6 +14,6 @@ data class Task(
     val plannedEndTime: Date? = null,
     val actualStartTime: Date? = null,
     val actualEndTime: Date? = null,
-    val projectId: Int,
+    val project: Project,
     val taskStatus: TaskStatus = TaskStatus.TODO
 )

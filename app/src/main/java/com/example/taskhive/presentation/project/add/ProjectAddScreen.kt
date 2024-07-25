@@ -198,7 +198,7 @@ fun ProjectAddScreenSkeleton(
                             selectedIcon = selectedIcon,
                             selectedIconColor = selectedColor,
                             selectedBorderColor = selectedBorderColor,
-                            endDate = Date(System.currentTimeMillis() + 86400000),
+                            endDate = endDate ?: Date()
                         ),
                         context,
                     )
@@ -234,9 +234,11 @@ fun ProjectAddScreenSkeleton(
                 object : SelectableDates {
                     val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
-                    override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= calendar.timeInMillis
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean =
+                        utcTimeMillis >= calendar.timeInMillis
 
-                    override fun isSelectableYear(year: Int): Boolean = year >= calendar.get(Calendar.YEAR)
+                    override fun isSelectableYear(year: Int): Boolean =
+                        year >= calendar.get(Calendar.YEAR)
                 },
             )
         val datePickerConfirmButtonEnabled =

@@ -6,12 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
+import com.example.taskhive.presentation.uimodel.TaskUiModel
+import com.example.taskhive.presentation.uimodel.toUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class TaskListViewModel : ViewModel() {
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    private val _tasks = MutableStateFlow<List<TaskUiModel>>(emptyList())
     val tasks = _tasks.asStateFlow()
 
     private val _project = MutableStateFlow<Project?>(null)
@@ -21,16 +23,21 @@ class TaskListViewModel : ViewModel() {
         projectId: Int,
         context: Context,
     ) = viewModelScope.launch {
-        val response = AppDatabase(context).taskDao().getTaskByProjectId(projectId)
+        val project = AppDatabase(context).projectDao().getProjectById(projectId)
+        val response = AppDatabase(context).taskDao().getTaskByProjectId(project)
         if (response.isNotEmpty()) {
-            _tasks.value = response
+            _tasks.value = response.map {
+                it.toUiModel()
+            }
         }
     }
 
-    fun getAllTasks(context: Context) =viewModelScope.launch {
+    fun getAllTasks(context: Context) = viewModelScope.launch {
         val response = AppDatabase(context).taskDao().getAllTasks()
         if (response.isNotEmpty()) {
-            _tasks.value = response
+            _tasks.value = response.map {
+                it.toUiModel()
+            }
         }
     }
 
