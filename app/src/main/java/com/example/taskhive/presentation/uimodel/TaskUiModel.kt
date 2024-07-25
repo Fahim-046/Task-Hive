@@ -14,7 +14,8 @@ data class TaskUiModel(
     val actualStartTime: Date? = null,
     val actualEndTime: Date? = null,
     val project: Project,
-    var taskStatus: TaskStatus = TaskStatus.TODO
+    var taskStatus: TaskStatus = TaskStatus.TODO,
+    var duration:Int = 0
 )
 
 fun Task.toUiModel() = TaskUiModel(

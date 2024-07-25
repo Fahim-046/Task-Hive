@@ -38,6 +38,7 @@ import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
 import com.example.taskhive.components.TimerButton
 import com.example.taskhive.components.TopBar
+import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
@@ -76,6 +77,9 @@ fun TaskListScreen(
         projectId = projectId,
         tasks = tasks,
         project = project,
+        saveLog = { log ->
+            viewModel.saveLog(context, log)
+        }
     )
 }
 
@@ -95,7 +99,11 @@ fun TaskListScreenSkeleton(
     projectId: Int? = null,
     tasks: List<TaskUiModel> = emptyList(),
     project: Project? = null,
+    saveLog: (Log) -> Unit = {}
 ) {
+    var logTaskId by remember {
+        mutableStateOf(-1)
+    }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var showLogDialog by remember {
         mutableStateOf(false)
@@ -179,7 +187,10 @@ fun TaskListScreenSkeleton(
                 ) { task ->
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
-                        onPauseClicked = {showLogDialog = true},
+                        onPauseClicked = {
+                            logTaskId = task.id
+                            showLogDialog = true
+                        },
                         projectName = project?.name ?: "",
                         taskName = task.title,
                         endTime = task.plannedEndTime.getReadableTime(),
@@ -197,8 +208,8 @@ fun TaskListScreenSkeleton(
             }
         }
     }
-    if(showLogDialog){
-        DataInputDialog(onDismiss = { showLogDialog = false }) {
+    if (showLogDialog) {
+        DataInputDialog(onDismiss = { showLogDialog = false }) {title->
             showLogDialog = false
         }
     }

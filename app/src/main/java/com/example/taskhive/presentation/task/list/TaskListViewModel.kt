@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.local.AppDatabase
+import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.presentation.uimodel.TaskUiModel
@@ -44,5 +45,9 @@ class TaskListViewModel : ViewModel() {
     fun getProjectById(projectId: Int, context: Context) = viewModelScope.launch {
         val response = AppDatabase(context).projectDao().getProjectById(projectId)
         _project.value = response
+    }
+
+    fun saveLog(context:Context, log:Log) = viewModelScope.launch {
+        AppDatabase(context).taskDao().saveLog(log)
     }
 }
