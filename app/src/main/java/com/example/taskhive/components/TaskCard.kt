@@ -17,6 +17,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,10 +32,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskhive.ui.theme.appColor
+import kotlinx.coroutines.delay
 
 @Composable
 fun TaskCard(
-    onClick:()->Unit = {},
+    onClick: () -> Unit = {},
+    onPauseClicked:() -> Unit = {},
     projectName: String,
     taskName: String,
     endTime: String,
@@ -36,8 +45,23 @@ fun TaskCard(
     icon: Int = 0,
     iconColor: Int = 0,
     backgroundColor: Int = 0,
+
 ) {
-    println("From task card $status")
+    var isRunning by remember {
+        mutableStateOf(false)
+    }
+
+    var timer by remember {
+        mutableStateOf(0)
+    }
+
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            delay(60000L)
+            timer += 1
+        }
+    }
+
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier =
@@ -104,16 +128,33 @@ fun TaskCard(
                     padding = 4.dp,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                StatusBadge(
-                    status = status,
-                    cornerShape = 8.dp,
-                    margin = 8.dp,
-                    horizontalPadding = 2.dp,
-                    verticalPadding = 1.dp,
-                    fontSize = 12.dp,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(formatTime(timer))
+                    TimerButton(
+                        onPlayClicked = {
+                            isRunning = true
+                        },
+                        onPauseClicked = {
+                            isRunning = false
+                            onPauseClicked()
+                        }
+                    )
+                }
             }
         }
+    }
+}
+
+fun formatTime(minutes: Int): String {
+    val hours = minutes / 60
+    val remainingMinutes = minutes % 60
+    return if (hours > 0) {
+        String.format("%dh %02dm", hours, remainingMinutes)
+    } else {
+        String.format("%dm", remainingMinutes)
     }
 }
 

@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,10 +30,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskhive.components.CalendarCard
+import com.example.taskhive.components.DataInputDialog
 import com.example.taskhive.components.ProgressType
 import com.example.taskhive.components.TaskCard
+import com.example.taskhive.components.TimerButton
 import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
@@ -93,6 +97,9 @@ fun TaskListScreenSkeleton(
     project: Project? = null,
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
+    var showLogDialog by remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         topBar =
         {
@@ -172,6 +179,7 @@ fun TaskListScreenSkeleton(
                 ) { task ->
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
+                        onPauseClicked = {showLogDialog = true},
                         projectName = project?.name ?: "",
                         taskName = task.title,
                         endTime = task.plannedEndTime.getReadableTime(),
@@ -187,6 +195,11 @@ fun TaskListScreenSkeleton(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
+        }
+    }
+    if(showLogDialog){
+        DataInputDialog(onDismiss = { showLogDialog = false }) {
+            showLogDialog = false
         }
     }
 }
