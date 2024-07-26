@@ -18,15 +18,4 @@ data class TaskUiModel(
     var totalTimeSpend:Long = 0L
 )
 
-fun Task.toUiModel() = TaskUiModel(
-    id = id,
-    title = title,
-    description = description,
-    plannedStartTime = plannedStartTime ?: Date(),
-    plannedEndTime = plannedEndTime ?: Date(),
-    actualStartTime = actualStartTime ?: Date(),
-    actualEndTime = actualEndTime ?: Date(),
-    project = project,
-    taskStatus = taskStatus,
-    totalTimeSpend = totalTimeSpend
-)
+

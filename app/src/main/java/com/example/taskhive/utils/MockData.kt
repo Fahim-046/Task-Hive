@@ -6,6 +6,11 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.Color
 import com.example.taskhive.domain.model.MockModel
+import com.example.taskhive.domain.model.Project
+import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.domain.model.toUiModel
+import java.util.Date
 
 object MockData {
     val tasks =
@@ -88,4 +93,25 @@ object MockData {
         "Personal Project" to Icons.Filled.Person,
         "Daily Study" to Icons.Filled.Book
     )
+    val project = Project(
+        id = 1,
+        name = "Project 1",
+        description = "This is a sample project",
+        endDate = Date(),
+        selectedIcon = 0,
+        selectedIconColor = 0xFF000000.toInt(),
+        selectedBorderColor = 0xFF000000.toInt()
+    )
+    val task = Task(
+        id = 1,
+        title = "Sample Task",
+        description = "This is a sample task description",
+        plannedStartTime = Date(),
+        plannedEndTime = Date(),
+        actualStartTime = Date(),
+        actualEndTime = Date(),
+        totalTimeSpend = 3600L,
+        project = project,
+        taskStatus = TaskStatus.IN_PROGRESS
+    ).toUiModel()
 }

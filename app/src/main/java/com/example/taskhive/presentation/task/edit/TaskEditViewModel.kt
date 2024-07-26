@@ -6,9 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.domain.model.toUiModel
 import com.example.taskhive.presentation.uimodel.TaskUiModel
-import com.example.taskhive.presentation.uimodel.toUiModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch

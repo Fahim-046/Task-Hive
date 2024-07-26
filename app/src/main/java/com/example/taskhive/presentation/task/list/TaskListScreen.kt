@@ -113,6 +113,9 @@ fun TaskListScreenSkeleton(
     var totalTimeSpend by remember {
         mutableLongStateOf(0L)
     }
+    var logSpendTime by remember {
+        mutableStateOf(0L)
+    }
     Scaffold(
         topBar =
         {
@@ -190,12 +193,12 @@ fun TaskListScreenSkeleton(
                         else -> tasks
                     },
                 ) { task ->
-                    println("Total duration is ${task.totalTimeSpend}")
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
-                        onPauseClicked = { totalSpend ->
+                        onPauseClicked = { totalSpend, timer ->
                             logTaskId = task.id
                             totalTimeSpend = totalSpend
+                            logSpendTime = timer
                             showLogDialog = true
                         },
                         projectName = project?.name ?: "",
@@ -218,7 +221,7 @@ fun TaskListScreenSkeleton(
     if (showLogDialog) {
         DataInputDialog(onDismiss = { showLogDialog = false }) { title ->
             showLogDialog = false
-            saveLog(Log(taskId = logTaskId, title = title, duration = totalTimeSpend))
+            saveLog(Log(taskId = logTaskId, title = title, duration = logSpendTime))
         }
     }
 }

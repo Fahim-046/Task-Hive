@@ -27,4 +27,7 @@ interface TaskDao {
 
     @Query("SELECT COUNT(*) FROM tasks WHERE project = :project")
     suspend fun getTaskCountByProject(project: Project): Int
+
+    @Query("SELECT * FROM logs WHERE taskId = :taskId")
+    suspend fun getLogsByTaskId(taskId: Int): List<Log>
 }

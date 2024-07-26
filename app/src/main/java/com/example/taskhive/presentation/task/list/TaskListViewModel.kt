@@ -6,9 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskhive.data.local.AppDatabase
 import com.example.taskhive.domain.model.Log
 import com.example.taskhive.domain.model.Project
-import com.example.taskhive.domain.model.Task
+import com.example.taskhive.domain.model.toUiModel
 import com.example.taskhive.presentation.uimodel.TaskUiModel
-import com.example.taskhive.presentation.uimodel.toUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -50,7 +49,7 @@ class TaskListViewModel : ViewModel() {
     fun saveLog(context: Context, log: Log) = viewModelScope.launch {
         val id = AppDatabase(context).taskDao().saveLog(log)
         val task = AppDatabase(context).taskDao().getTaskById(log.taskId)
-        val updatedTask = task.copy(totalTimeSpend = log.duration)
+        val updatedTask = task.copy(totalTimeSpend = task.totalTimeSpend+log.duration)
         AppDatabase(context).taskDao().saveTask(updatedTask)
         val tasks = AppDatabase(context).taskDao().getAllTasks()
         if (tasks.isNotEmpty()) {

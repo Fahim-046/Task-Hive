@@ -13,7 +13,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -43,8 +46,10 @@ import com.example.taskhive.components.TopBar
 import com.example.taskhive.domain.model.Project
 import com.example.taskhive.domain.model.Task
 import com.example.taskhive.domain.model.TaskStatus
+import com.example.taskhive.domain.model.toUiModel
 import com.example.taskhive.presentation.uimodel.TaskUiModel
 import com.example.taskhive.utils.HelperFunctions.convert24HourTo12Hour
+import com.example.taskhive.utils.MockData.task
 import com.example.taskhive.utils.getReadableTime
 import com.example.taskhive.utils.toDate
 import java.util.Date
@@ -52,6 +57,7 @@ import java.util.Date
 @Composable
 fun TaskEditScreen(
     goBack: () -> Unit,
+    goToLogListScreen: (Int) -> Unit = {},
     taskId: Int,
 ) {
     val viewModel: TaskEditViewModel = viewModel()
@@ -83,16 +89,19 @@ fun TaskEditScreen(
         onDescriptionChange = { newDescription ->
             viewModel.onDescriptionChange(newDescription)
         },
-        onTaskStatusChange = {newStatus->
+        onTaskStatusChange = { newStatus ->
             viewModel.onTaskStatusChange(newStatus)
-        }
+        },
+        goToLogListScreen = goToLogListScreen,
+        taskId = taskId
     )
 }
 
 @Preview
 @Composable
 private fun TaskEditScreenSkeletonPreview() {
-    TaskEditScreenSkeleton()
+
+    TaskEditScreenSkeleton(taskId = task.id, task = task)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,7 +112,9 @@ fun TaskEditScreenSkeleton(
     editTask: (String, String, Date?, Date?, TaskStatus) -> Unit = { _, _, _, _, _ -> },
     onTitleChange: (String) -> Unit = {},
     onDescriptionChange: (String) -> Unit = {},
-    onTaskStatusChange:(TaskStatus)->Unit = {}
+    onTaskStatusChange: (TaskStatus) -> Unit = {},
+    goToLogListScreen: (Int) -> Unit = { _ -> },
+    taskId: Int
 ) {
     var status by remember {
         mutableStateOf(TaskStatus.TODO)
@@ -114,9 +125,10 @@ fun TaskEditScreenSkeleton(
         topBar = {
             TopBar(
                 onClick = { goBack() },
+                goToLogListScreen = { goToLogListScreen(taskId) },
                 leadingIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 title = "Edit Task",
-                trailingIcon = Icons.Filled.Notifications,
+                trailingIcon = Icons.Filled.MoreVert,
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -147,6 +159,7 @@ fun TaskEditScreenSkeleton(
                 .padding(16.dp)
                 .fillMaxSize(),
         ) {
+            // TODO QUESTION
             if (task != null) {
                 CommonCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -223,7 +236,6 @@ fun TaskEditScreenSkeleton(
                         text = "Done",
                         isSelected = task.taskStatus == TaskStatus.DONE
                     )
-                    println(status)
                 }
 
             }

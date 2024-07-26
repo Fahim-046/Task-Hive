@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,12 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskhive.ui.theme.appColor
+import com.example.taskhive.utils.formatLogTime
 import kotlinx.coroutines.delay
 
 @Composable
 fun TaskCard(
     onClick: () -> Unit = {},
-    onPauseClicked: (Long) -> Unit = { _ -> },
+    onPauseClicked: (Long, Long) -> Unit = { _, _ -> },
     projectName: String,
     taskName: String,
     duration: Long,
@@ -55,7 +57,7 @@ fun TaskCard(
     }
 
     var timer by remember {
-        mutableStateOf(0L)
+        mutableLongStateOf(0L)
     }
 
     LaunchedEffect(isRunning) {
@@ -117,7 +119,7 @@ fun TaskCard(
                         tint = appColor,
                     )
                     Spacer(modifier = Modifier.width(2.dp))
-                    Text(text = formatTime(duration), color = appColor, fontSize = 14.sp)
+                    Text(text = formatLogTime(duration), color = appColor, fontSize = 14.sp)
                 }
             }
             Column(
@@ -136,7 +138,7 @@ fun TaskCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(formatTime(timer))
+                    Text(formatLogTime(timer))
                     TimerButton(
                         onPlayClicked = {
                             isRunning = true
@@ -144,7 +146,8 @@ fun TaskCard(
                         onPauseClicked = {
                             isRunning = false
                             onPauseClicked(
-                                duration + timer
+                                duration + timer,
+                                timer
                             )
                             timer = 0
                         }
@@ -155,15 +158,7 @@ fun TaskCard(
     }
 }
 
-fun formatTime(minutes: Long): String {
-    val hours = minutes / 60
-    val remainingMinutes = minutes % 60
-    return if (hours > 0) {
-        String.format("%dh %02dm", hours, remainingMinutes)
-    } else {
-        String.format("%dm", remainingMinutes)
-    }
-}
+
 
 @Preview()
 @Composable

@@ -37,3 +37,13 @@ fun String?.toDate(): Date?{
         null
     }
 }
+
+fun formatLogTime(minutes: Long): String {
+    val hours = minutes / 60
+    val remainingMinutes = minutes % 60
+    return if (hours > 0) {
+        String.format("%dh %02dm", hours, remainingMinutes)
+    } else {
+        String.format("%dm", remainingMinutes)
+    }
+}
