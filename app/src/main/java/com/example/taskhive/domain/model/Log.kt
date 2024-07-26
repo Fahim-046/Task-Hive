@@ -8,6 +8,6 @@ data class Log(
     @PrimaryKey(autoGenerate = true)
     val id:Int = 0,
     val title:String,
-    val duration:Int,
+    val duration:Long,
     val taskId:Int,
 )

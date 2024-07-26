@@ -47,7 +47,16 @@ class TaskListViewModel : ViewModel() {
         _project.value = response
     }
 
-    fun saveLog(context:Context, log:Log) = viewModelScope.launch {
-        AppDatabase(context).taskDao().saveLog(log)
+    fun saveLog(context: Context, log: Log) = viewModelScope.launch {
+        val id = AppDatabase(context).taskDao().saveLog(log)
+        val task = AppDatabase(context).taskDao().getTaskById(log.taskId)
+        val updatedTask = task.copy(totalTimeSpend = log.duration)
+        AppDatabase(context).taskDao().saveTask(updatedTask)
+        val tasks = AppDatabase(context).taskDao().getAllTasks()
+        if (tasks.isNotEmpty()) {
+            _tasks.value = tasks.map {
+                it.toUiModel()
+            }
+        }
     }
 }

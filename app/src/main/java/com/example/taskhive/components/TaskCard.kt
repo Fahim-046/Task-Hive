@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,28 +33,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.taskhive.ui.theme.appColor
 import kotlinx.coroutines.delay
 
 @Composable
 fun TaskCard(
     onClick: () -> Unit = {},
-    onPauseClicked:() -> Unit = {},
+    onPauseClicked: (Long) -> Unit = { _ -> },
     projectName: String,
     taskName: String,
-    endTime: String,
+    duration: Long,
     status: String,
     icon: Int = 0,
     iconColor: Int = 0,
     backgroundColor: Int = 0,
 
-) {
+    ) {
     var isRunning by remember {
         mutableStateOf(false)
     }
 
     var timer by remember {
-        mutableStateOf(0)
+        mutableStateOf(0L)
     }
 
     LaunchedEffect(isRunning) {
@@ -67,7 +70,7 @@ fun TaskCard(
         modifier =
         Modifier
             .fillMaxWidth()
-            .height(160.dp)
+            .height(140.dp)
             .clickable {
                 onClick()
             },
@@ -89,7 +92,7 @@ fun TaskCard(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
                     text = projectName,
@@ -100,20 +103,21 @@ fun TaskCard(
                 Text(
                     text = taskName,
                     color = Color.Black,
-                    modifier = Modifier.padding(top = 8.dp),
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                 )
+                Spacer(modifier = Modifier.weight(1f))
                 Row(
                     modifier = Modifier.padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Alarm,
+                        imageVector = Icons.Filled.Timelapse,
                         contentDescription = null,
                         tint = appColor,
                     )
-                    Text(text = endTime, color = appColor)
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(text = formatTime(duration), color = appColor, fontSize = 14.sp)
                 }
             }
             Column(
@@ -139,7 +143,10 @@ fun TaskCard(
                         },
                         onPauseClicked = {
                             isRunning = false
-                            onPauseClicked()
+                            onPauseClicked(
+                                duration + timer
+                            )
+                            timer = 0
                         }
                     )
                 }
@@ -148,7 +155,7 @@ fun TaskCard(
     }
 }
 
-fun formatTime(minutes: Int): String {
+fun formatTime(minutes: Long): String {
     val hours = minutes / 60
     val remainingMinutes = minutes % 60
     return if (hours > 0) {
@@ -164,7 +171,7 @@ private fun TaskPreview() {
     TaskCard(
         projectName = "Task Management and To do app design",
         taskName = "Market Research",
-        endTime = "10:00 AM",
+        duration = 0L,
         status = "In Progress",
     )
 }

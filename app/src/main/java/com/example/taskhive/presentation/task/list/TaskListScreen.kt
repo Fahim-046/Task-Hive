@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -68,6 +69,7 @@ fun TaskListScreen(
             viewModel.getProjectById(projectId, context)
         }
     }
+
     val tasks by viewModel.tasks.collectAsState()
     val project by viewModel.project.collectAsState()
     TaskListScreenSkeleton(
@@ -102,11 +104,14 @@ fun TaskListScreenSkeleton(
     saveLog: (Log) -> Unit = {}
 ) {
     var logTaskId by remember {
-        mutableStateOf(-1)
+        mutableIntStateOf(-1)
     }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var showLogDialog by remember {
         mutableStateOf(false)
+    }
+    var totalTimeSpend by remember {
+        mutableLongStateOf(0L)
     }
     Scaffold(
         topBar =
@@ -185,15 +190,17 @@ fun TaskListScreenSkeleton(
                         else -> tasks
                     },
                 ) { task ->
+                    println("Total duration is ${task.totalTimeSpend}")
                     TaskCard(
                         onClick = { goToEditTask(task.id) },
-                        onPauseClicked = {
+                        onPauseClicked = { totalSpend ->
                             logTaskId = task.id
+                            totalTimeSpend = totalSpend
                             showLogDialog = true
                         },
                         projectName = project?.name ?: "",
                         taskName = task.title,
-                        endTime = task.plannedEndTime.getReadableTime(),
+                        duration = task.totalTimeSpend,
                         status = when (task.taskStatus) {
                             TaskStatus.TODO -> "To-do"
                             TaskStatus.IN_PROGRESS -> "In Progress"
@@ -209,8 +216,9 @@ fun TaskListScreenSkeleton(
         }
     }
     if (showLogDialog) {
-        DataInputDialog(onDismiss = { showLogDialog = false }) {title->
+        DataInputDialog(onDismiss = { showLogDialog = false }) { title ->
             showLogDialog = false
+            saveLog(Log(taskId = logTaskId, title = title, duration = totalTimeSpend))
         }
     }
 }
